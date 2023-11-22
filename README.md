@@ -11,4 +11,5 @@ It starts by labeling all POS as nouns, then it tries to refine the tagging by c
 For example in English, it converts a noun_tag to a past participle if the noun ends with "ed"
 
 Brill's tagger has only a few rules, mine has many more, but I may have made a lot of errors, English is not even my native tongue.
-I use three characters for tag mnemonics, where Brill used a mix of 2 and 3 characters.
+I use three characters for tag mnemonics, whereas Brill used a mix of 2 and 3 characters.
+While Brill used the Brown corpus, I uses a slightly different one.

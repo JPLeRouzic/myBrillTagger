@@ -135,12 +135,12 @@ POSTagger.prototype.tag = function (words) {
         if (startsWith(tags[i], "NN") && endsWith(words[i], "ing"))
             tags[i] = "VVG";
 
-        /*
+        /* rule 9:
          * This is to infer if it's something numeric
          */
         tags[i] = transformNumerics(words[i], tags[i]);
 
-        /*
+        /* rule 10:
          * This is to infer if it's something else than a common noun
          * for ex. Common noun to adj. if it ends with 'al'
          */
@@ -148,44 +148,47 @@ POSTagger.prototype.tag = function (words) {
             tags[i] = transformNoun(tags[i], words[i]);
         }
 
-        /*
+        /* rule 11:
          * For undetected articles
          */
         if (i > 0 && (tags[i - 1] === 'ZZ0') && (substr(tags[i], -3, 2) === 'NN')) {
             tags[i - 1] = 'AT0';
         }
 
-        /*
+        /* rule 12:
          * Converts verbs after 'the' to nouns
          */
         if (i > 0 && tags[i - 1] === 'DT0' && isVerb(tags[i])) {
             tags[i] = 'NN1';
         }
 
-        /*
+        /* rule 13:
          * Rectifies 'I' as a pronoun if before a verb
          */
         if (i > 0 && tags[i - 1] === 'ZZ0' && isVerb(tags[i])) {
             tags[i - 1] = 'PNP';
         }
 
-        /*
+        /* rule 14:
          * Rectifies 'one' as a pronoun if it is after 'the'
          */
         if (i > 0 && tags[i - 1] === 'AT0' && tags[i] === 'CRD') {
             tags[i] = 'PNI';
         }
 
+        // rule 15:
         // Convert NN1 to NP0 if first (and only the first) character is upper case, except if first word of sentence (except if all characters are uppercase)
-        if (i > 0 && (tags[i] === 'NN1') && (starts_with_upper(words[i]))) {
+        if (i > 0 && (tags[i] === 'NN1') && (startsWithUpper(words[i]))) {
             tags[i] = 'NP0';
         }
 
+        // rule 16:
         // Discover negative abreviation like ('weren't')
         if ((tags[i] !== 'VM1') && (substr(words[i], -2, 1) === '\'t')) {
             tags[i] = 'VM1';
         }
 
+        // rule 17:
         // Differentiate between VVB and VVI
         if (i > 0) {
             previousTag = tags[i - 1];
@@ -194,7 +197,7 @@ POSTagger.prototype.tag = function (words) {
             }
         }
 
-        /*
+        /* rule 18:
          * Rectifies 'like' as a verb if after 'do'
          * verb => (*PNP, (VBD), (XX0), (AV0), Vxx* )
          */
@@ -208,12 +211,26 @@ POSTagger.prototype.tag = function (words) {
             tags[i] = 'VMI';
         }
 
-        /*
+        /* rule 19:
          * This is to infer if it's something numeric
          * Anything that ends 'ly' is an adverb
          */
         if (i > 0) {
             tags[i] = transformBetweenNounAndVerb(tags, i, words[i]);
+        }
+
+        /* rule 20:
+         * comparative adjective (e.g. BETTER, OLDER)
+         */
+        if (i > 0 && tags[i] === 'AJ0' && endsWith(word, "er")) {
+            tags[i] = 'AJC';
+        }
+
+        /* rule 21:
+         * superlative adjective (e.g. BEST, OLDEST)
+         */
+        if (i > 0 && tags[i] === 'AJ0' && endsWith(word, "est")) {
+            tags[i] = 'AJS';
         }
 
     }
@@ -265,15 +282,17 @@ function isVerb(tag) {
 }
 
 function isPastTenseVerb(token) {
-    return this.lexicon[token]?.includes('VBN') || false;
+    return dictionnary[token]?.includes('VBN') || false;
 }
 
 function isPresentTenseVerb(token) {
-    return this.lexicon[token]?.includes('VBZ') || false;
+    return dictionnary[token]?.includes('VBZ') || false;
 }
 
 function isAdjective(token) {
-    return this.lexicon[token]?.includes('JJ') || token.slice(-2) === 'al';
+        var1 = dictionnary[token]?.includes('JJ') ;
+        var2 = (token.slice(-2) === 'al') ;
+        return var1 || var2 ;
 }
 
 function isGerund(token) {
